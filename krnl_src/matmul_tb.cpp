@@ -38,7 +38,7 @@ if(out[0][0]==24&out[0][1]==32&out[1][0]==57&out[1][1]==77){
 	printf("Test passed,grats");
 }
 else{
-	return 0;
+	return 33;
 }
 
 
