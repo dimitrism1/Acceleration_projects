@@ -32,6 +32,8 @@ int outtemp[MAX_SIZE][MAX_SIZE];//={{0,0},
 /*#pragma HLS bind_storage type=RAM_S2P variable=atemp impl=LUTRAM
 #pragma HLS bind_storage type=RAM_S2P variable=btemp impl=LUTRAM
 #pragma HLS bind_storage type=RAM_S2P variable=outtemp impl=LUTRAM*/
+
+
 ///////// Initialize output to all zeros ///////////
 initzero:for(int i = 0; i < MAX_SIZE;i++){
 //#pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size			//if the loop bound isn't fixed,loop tripcount is needed to measure latency
@@ -43,7 +45,6 @@ initzero:for(int i = 0; i < MAX_SIZE;i++){
 	outtemp[i][j]=0;
 }
 }
-/////////// Load a to local memory //////////////
 
 /*loadarow:for(int i = 0;i<a_row;i++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
@@ -55,6 +56,7 @@ loadacol:	for(int j = 0;j<a_col;j++){
 
 	}
 }*/
+/////////// Load a to local memory //////////////
 loada:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
 				if(j==a_col){
@@ -69,7 +71,6 @@ loada:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
 
 }
 //int k=0;
-/////////// Load b to local memory //////////////
 /*loadbrow:for(int i = 0;i<b_row;i++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
 loadbcol:	for(int j=0;j<b_col;j++){
@@ -81,6 +82,8 @@ loadbcol:	for(int j=0;j<b_col;j++){
 
 	}
 }*/
+
+/////////// Load b to local memory //////////////
 
 loadb:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
@@ -99,23 +102,19 @@ loadb:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
 	}
 }*/
 
+
 /////////// Matrix multiplication //////////////
 
 rowa:	for (uint32_t i=0;i<a_row;i++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
-//#pragma HLS UNROLL
 			//if(i<a_row){
 colb:		for(uint32_t j=0;j<b_col;j++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
 	//if(j<b_col){
-//#pragma HLS UNROLL
 
 
-//#pragma HLS PIPELINE II=3
 cola:			for(uint32_t z=0;z<MAX_SIZE;z++){
-//#pragma HLS PIPELINE II=1
 #pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
-//#pragma HLS UNROLL
 	//if(z<a_col){
 
 				outtemp[i][j]+=(z<a_col) ? (atemp[i][z]*btemp[z][j]) : 0;
@@ -138,7 +137,7 @@ cola:			for(uint32_t z=0;z<MAX_SIZE;z++){
 	//}
 //}
 //}
-////////////Send results to global memory /////////////
+
 
 /*sendoutrow:for(int i=0;i<c_row;i++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
@@ -148,6 +147,7 @@ sendoutcol:	for(int j=0;j<c_col;j++){
 		l++;
 	}
 }*/
+////////////Send results to global memory /////////////
 sendout:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
 //#pragma HLS UNROLL
