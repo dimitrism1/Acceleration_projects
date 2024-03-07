@@ -187,7 +187,7 @@ cpu_time=clock()-cpu_start;
 ////////// Performance output /////////////
 std::cout<<"CPU duration:"<<cpu_time/float(CLOCKS_PER_SEC)<<" seconds"<<std::endl;
 int total=(2*rowa*cola*colb-rowa*colb)*iter*sizeof(int);
-std::cout<<"TB= "<<total<<std::endl;
+std::cout<<"Total calulations= "<<total<<std::endl;
 std::cout << "FPGA duration:" << fpga_time << std::endl;
 std::cout << "Throughput:" << (total/fpga_time)/(1024*1024) << " MB/s" << std::endl;
 //std::cout<<"Speedup is "<<(double)start_time.count()/(double)fpga_time.count()<<std::endl;
