@@ -9,11 +9,14 @@
 #define COLB 2
 #define iter 1000
 
+
+
+
 int main(int argc,char** argv){
 
 
 
-static const int DATA_SIZE=2048;
+static const int DATA_SIZE=15;
 size_t size_in_bytes=DATA_SIZE*sizeof(int);
 
 cl_int err;
@@ -120,8 +123,7 @@ q.enqueueMigrateMemObjects({bufferout},CL_MIGRATE_MEM_OBJECT_HOST);
 
 q.finish();		//wait until all previous commands have been executed
 
-q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
-q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
+
 
 
 ////// print hardware result //////////
@@ -144,7 +146,8 @@ break;
 
 }
 }
-
+q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
+q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
 
 fpga_clk=clock()-fpga_start;
 float fpga_time = (float)fpga_clk/(CLOCKS_PER_SEC);
@@ -225,3 +228,7 @@ return 0;
 }
 
 
+
+
+
+ 
