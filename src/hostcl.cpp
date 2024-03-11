@@ -4,10 +4,10 @@
 #include "xcl2.hpp"
 
 
-#define ROWA 7
-#define COLA 2
-#define COLB 2
-#define iter 1000
+#define ROWA 8
+#define COLA 8
+#define COLB 8
+#define iter 10000
 
 
 
@@ -16,8 +16,10 @@ int main(int argc,char** argv){
 
 
 
-static const int DATA_SIZE=15;
+static const int DATA_SIZE=16;
 size_t size_in_bytes=DATA_SIZE*sizeof(int);
+size_t matrix_size=DATA_SIZE*DATA_SIZE;
+size_t matrix_size_in_bytes=matrix_size*sizeof(int);
 
 cl_int err;
 unsigned nb;
@@ -44,8 +46,6 @@ cl::Program program;
 cl::CommandQueue q;
 cl::Kernel kernel_matmul;
 cl::Buffer buffera,bufferb,bufferout;
-size_t matrix_size=DATA_SIZE*DATA_SIZE;
-size_t matrix_bytes=matrix_size*sizeof(int);
 int rowa=ROWA;
 int cola=COLA;
 int colb=COLB;
@@ -74,9 +74,9 @@ break;
 
 }
 
-buffera = cl::Buffer(context,CL_MEM_READ_ONLY,size_in_bytes,nullptr,&err);		
-bufferb = cl::Buffer(context,CL_MEM_READ_ONLY,size_in_bytes,nullptr,&err);
-bufferout = cl::Buffer(context,CL_MEM_WRITE_ONLY,size_in_bytes,nullptr,&err);
+buffera = cl::Buffer(context,CL_MEM_READ_ONLY,matrix_size_in_bytes,nullptr,&err);		
+bufferb = cl::Buffer(context,CL_MEM_READ_ONLY,matrix_size_in_bytes,nullptr,&err);
+bufferout = cl::Buffer(context,CL_MEM_WRITE_ONLY,matrix_size_in_bytes,nullptr,&err);
 
 ////// Set kernel arguments /////////
 int narg=0;
@@ -91,9 +91,9 @@ kernel_matmul.setArg(narg++,colb);
 
 
 
-ptr_a=(int*)q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,size_in_bytes,nullptr,nullptr,&err);
-ptr_b=(int*)q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,size_in_bytes,nullptr,nullptr,&err);
-ptr_out=(int*)q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,size_in_bytes,nullptr,nullptr,&err);
+ptr_a=(int*)q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_b=(int*)q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_out=(int*)q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_bytes,nullptr,nullptr,&err);
 
 
 ////// Measure time for the whole fpga execution ////////
@@ -101,7 +101,7 @@ clock_t fpga_start,fpga_clk;
 fpga_start=clock();
 ///////// Initialise pointers //////////
 for(int o=0;o<iter;o++){
-for(int i=0;i<DATA_SIZE;i++){
+for(int i=0;i<matrix_size;i++){
 ptr_a[i]=1;
 ptr_b[i]=1;
 
