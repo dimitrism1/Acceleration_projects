@@ -36,7 +36,7 @@ std::vector<cl::Device> dev;
 /////Get all xilinx devices
 auto devices = xcl::get_xil_devices();
 for(int i=0;i<devices.size();i++){
-std::cout<<devices[i].getInfo<CL_DEVICE_NAME>()<<std::endl;
+	std::cout<<devices[i].getInfo<CL_DEVICE_NAME>()<<std::endl;
 }
 ////////Read binary file and point to its buffer
 auto filebuf = xcl::read_binary_file(binaryfile,nb);
@@ -57,18 +57,18 @@ bool device_found = false;
 cl::Program::Binaries bins{{filebuf.data(), filebuf.size()}};			
 //bins.push_back({filebuf,nb});							//not working
 for(unsigned int i = 0;i<devices.size();i++){
-auto device = devices[i];
-context = cl::Context(device,nullptr,nullptr,nullptr,&err);
-q = cl::CommandQueue(context,device,CL_QUEUE_PROFILING_ENABLE,&err);
-program = cl::Program(context,{device},bins,nullptr,&err);
-//std::cout<<"It works?"<<std::endl;
-if(err != CL_SUCCESS){
-std::cout<<"Unable to program device "<<device.getInfo<CL_DEVICE_NAME>()<<std::endl;
-}
-else{
-std::cout<<"Programming of device "<<device.getInfo<CL_DEVICE_NAME>()<<" succesful"<<std::endl;
-kernel_matmul = cl::Kernel(program,"matmul",&err);	//matmul is the name of the kernel top function
-std::cout<<kernel_matmul.getInfo<CL_KERNEL_FUNCTION_NAME>()<<std::endl;
+	auto device = devices[i];
+	context = cl::Context(device,nullptr,nullptr,nullptr,&err);
+	q = cl::CommandQueue(context,device,CL_QUEUE_PROFILING_ENABLE,&err);
+	program = cl::Program(context,{device},bins,nullptr,&err);
+
+	if(err != CL_SUCCESS){
+		std::cout<<"Unable to program device "<<device.getInfo<CL_DEVICE_NAME>()<<std::endl;
+}	
+	else{
+		std::cout<<"Programming of device "<<device.getInfo<CL_DEVICE_NAME>()<<" succesful"<<std::endl;
+		kernel_matmul = cl::Kernel(program,"matmul",&err);	//matmul is the name of the kernel top function
+		std::cout<<kernel_matmul.getInfo<CL_KERNEL_FUNCTION_NAME>()<<std::endl;
 break;
 }
 
@@ -99,49 +99,50 @@ ptr_out=(int*)q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_
 ////// Measure time for the whole fpga execution ////////
 clock_t fpga_start,fpga_clk;
 fpga_start=clock();
-///////// Initialise pointers //////////
+/////// Repeat multiplication for iter iterations
 for(int o=0;o<iter;o++){
-for(int i=0;i<matrix_size;i++){
-ptr_a[i]=1;
-ptr_b[i]=1;
+///////// Initialise pointers //////////
+	for(int i=0;i<matrix_size;i++){
+		ptr_a[i]=1;
+		ptr_b[i]=1;
 
 
 }
 //////// Transfer buffer objects to the device //////////
-q.enqueueMigrateMemObjects({buffera,bufferb},0);//CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED);
+	q.enqueueMigrateMemObjects({buffera,bufferb},0);//CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED);
 
-cl::Event event;
+	cl::Event event;
 //////// Start kernel /////////
-q.enqueueNDRangeKernel(kernel_matmul,1,1,1,nullptr,&event);			//enqueueTask is deprecated, enqueueNDRangeKernel equivalent
+	q.enqueueNDRangeKernel(kernel_matmul,1,1,1,nullptr,&event);		//enqueueTask is deprecated, enqueueNDRangeKernel equivalent
 //q.enqueueTask(kernel_matmul);
-q.finish();
+	q.finish();
 
 /////// send data back to host //////////
-q.enqueueMigrateMemObjects({bufferout},CL_MIGRATE_MEM_OBJECT_HOST);
+	q.enqueueMigrateMemObjects({bufferout},CL_MIGRATE_MEM_OBJECT_HOST);
 
 
 
-q.finish();		//wait until all previous commands have been executed
+	q.finish();		//wait until all previous commands have been executed
 
 
 
 
 ////// print hardware result //////////
-std::cout<<"printing Hardware results"<<std::endl;
-int temp=0;
-for(int i=0;i<size_in_bytes;i++){
+	std::cout<<"printing Hardware results"<<std::endl;
+	int temp=0;
+	for(int i=0;i<size_in_bytes;i++){
 
-std::cout<<ptr_out[i]<<" ";
-if(temp==colb-1){
-std::cout<<std::endl;
-temp=0;
+		std::cout<<ptr_out[i]<<" ";
+		if(temp==colb-1){
+			std::cout<<std::endl;
+			temp=0;
 }
-else{
-temp++;
+		else{
+			temp++;
 }
-if(i==rowa*colb-1){
-std::cout<<std::endl;
-break;
+		if(i==rowa*colb-1){
+			std::cout<<std::endl;
+			break;
 }
 
 }
@@ -156,9 +157,9 @@ float fpga_time = (float)fpga_clk/(CLOCKS_PER_SEC);
 clock_t cpu_start,cpu_time;
 cpu_start=clock();
 
-int host_result[rowa*colb]={0};
+int host_result[rowa*colb];
 for(int p = 0; p<iter; p++){
-std::cout<<"Printing software results"<<std::endl;
+	std::cout<<"Printing software results"<<std::endl;
 for(int i=0;i<rowa*colb;i++){
 	host_result[i] = 0;
 }
@@ -181,7 +182,7 @@ for(int i = 0;i < rowa;i++){
 		}
 		else	{
 		temph++;
-}
+		}
 }
 }
 }
@@ -220,9 +221,7 @@ cl::Event event;
 std::cout<<"alt_Fpga exec time: "<<fpga_exec_time_s<<" seconds"<<std::endl;
 std::cout<<"alt_throughput:"<<(total/fpga_exec_time_s)/(1024*1024)<<" MB/s "<<std::endl;
 
-/*q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
-q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
-q.enqueueUnmapMemObject(bufferout,ptr_out,nullptr,nullptr);*/
+
 return 0;
 
 }
