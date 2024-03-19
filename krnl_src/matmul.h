@@ -3,7 +3,7 @@
 #define COLA 3
 #define COLB 2
 
-#define MAX_SIZE 8
+#define MAX_SIZE 16
 extern "C"{
 
 /*void matmul(uint32_t a[][COLA],uint32_t b[][COLB],uint32_t out[][COLB]);//,uint32_t rowa,uint32_t cola,uint32_t colb);

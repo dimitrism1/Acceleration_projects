@@ -4,11 +4,11 @@
 ##############just trying #########################
 TARGET := hw
 PLATFORM ?= xilinx_u200_gen3x16_xdma_1_202110_1
-HOST_SRC+=src/hostcl.cpp common/xcl2.cpp
-EXECUTABLE=src/host2
+HOST_SRC+=src/hostalt.cpp common/xcl2.cpp
+EXECUTABLE=src/hostalt
 XCLBIN=krnl_src/matmul.sw_emu.xclbin
-KRNL_SRC+=krnl_src/matmul.cpp krnl_src/matmul.h
-KRNL_NAME=matmul
+KRNL_SRC+=krnl_src/matmul_it.cpp krnl_src/matmul_it.h
+KRNL_NAME=matmul_it
 build:
 	v++ -t $(TARGET) --platform $(PLATFORM) -c -g -k $(KRNL_NAME) -I ./src -o $(KRNL_NAME).$(TARGET).xo $(KRNL_SRC)
 link:

@@ -4,9 +4,9 @@
 #include "xcl2.hpp"
 
 
-#define ROWA 8
-#define COLA 8
-#define COLB 8
+#define ROWA 2
+#define COLA 3
+#define COLB 2
 #define iter 10000
 
 
@@ -74,7 +74,7 @@ break;
 
 }
 
-buffera = cl::Buffer(context,CL_MEM_READ_ONLY,matrix_size_in_bytes,nullptr,&err);		
+buffera = cl::Buffer(context,CL_MEM_READ_ONLY,matrix_size_in_bytes,nullptr,&err);			//kernel buffer	
 bufferb = cl::Buffer(context,CL_MEM_READ_ONLY,matrix_size_in_bytes,nullptr,&err);
 bufferout = cl::Buffer(context,CL_MEM_WRITE_ONLY,matrix_size_in_bytes,nullptr,&err);
 
@@ -91,7 +91,7 @@ kernel_matmul.setArg(narg++,colb);
 
 
 
-ptr_a=(int*)q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_a=(int*)q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);	//host pointers
 ptr_b=(int*)q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
 ptr_out=(int*)q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_bytes,nullptr,nullptr,&err);
 
@@ -128,7 +128,7 @@ for(int o=0;o<iter;o++){
 
 
 ////// print hardware result //////////
-	std::cout<<"printing Hardware results"<<std::endl;
+	/*std::cout<<"printing Hardware results"<<std::endl;
 	int temp=0;
 	for(int i=0;i<size_in_bytes;i++){
 
@@ -145,7 +145,7 @@ for(int o=0;o<iter;o++){
 			break;
 }
 
-}
+}*/
 }
 q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
 q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
@@ -159,7 +159,7 @@ cpu_start=clock();
 
 int host_result[rowa*colb];
 for(int p = 0; p<iter; p++){
-	std::cout<<"Printing software results"<<std::endl;
+	//std::cout<<"Printing software results"<<std::endl;
 for(int i=0;i<rowa*colb;i++){
 	host_result[i] = 0;
 }
@@ -175,25 +175,28 @@ for(int i = 0;i < rowa;i++){
 		
 }
 		
-		std::cout<<host_result[i*colb + j]<<" ";
+		/*std::cout<<host_result[i*colb + j]<<" ";
 		if(temph == colb-1) {
 		std::cout<<std::endl;
 		temph = 0;
 		}
 		else	{
 		temph++;
-		}
+		}*/
 }
 }
 }
 std::cout<<std::endl;	
 cpu_time=clock()-cpu_start;
 ////////// Performance output /////////////
-std::cout<<"CPU duration:"<<cpu_time/float(CLOCKS_PER_SEC)<<" seconds"<<std::endl;
-int total=(2*rowa*cola*colb-rowa*colb)*iter*sizeof(int);
-std::cout<<"Total calulations= "<<total<<std::endl;
+auto cpu_duration = (float)cpu_time/(CLOCKS_PER_SEC);
+std::cout<<"CPU duration:"<<(float)cpu_time/(CLOCKS_PER_SEC)<<" seconds"<<std::endl;
+//int total=(2*rowa*cola*colb-rowa*colb)*iter*sizeof(int);
+int total = (rowa*cola*colb) * iter * sizeof(int);
+std::cout<<"Total calculations= "<<total<<std::endl;
 std::cout << "FPGA duration:" << fpga_time << std::endl;
 std::cout << "Throughput:" << (total/fpga_time)/(1024*1024) << " MB/s" << std::endl;
+std::cout << "CPU Throughput:" << (total/(float)cpu_duration)/(1024*1024) << " MB/s" << std::endl;
 //std::cout<<"Speedup is "<<(double)start_time.count()/(double)fpga_time.count()<<std::endl;
 
 
