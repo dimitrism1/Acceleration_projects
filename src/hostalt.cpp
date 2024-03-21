@@ -8,7 +8,7 @@
 #define COLA 16
 #define COLB 16
 #define iter 1
-#define repcounts 2000000
+#define repcounts 60
 
 //int verify(int host_result[],int kernel_result[])
 
@@ -27,7 +27,7 @@ unsigned nb;
 OCL_CHECK(err, err = cl::Platform::get(&platforms1));				//get_xil_devices function explained
 platforms1[1].getDevices(CL_DEVICE_TYPE_ACCELERATOR,&dev);
 std::cout<<dev[0].getInfo<CL_DEVICE_NAME>()<<std::endl;*/
-
+std::cout<<argv[2]<<std::endl;
 
 // xclbin specified in commandline
 std::string binaryfile=argv[1];			
@@ -66,8 +66,8 @@ for(unsigned int i = 0;i<devices.size();i++){
 		std::cout<<"Unable to program device "<<device.getInfo<CL_DEVICE_NAME>()<<std::endl;
 }	
 	else{
-		std::cout<<"Programming of device "<<device.getInfo<CL_DEVICE_NAME>()<<" succesful"<<std::endl;
-		kernel_matmul = cl::Kernel(program,"matmul_it",&err);	//matmul is the name of the kernel top function
+	        std::cout<<"Programming of device "<<device.getInfo<CL_DEVICE_NAME>()<<" succesful"<<std::endl;
+		kernel_matmul = cl::Kernel(program,argv[2],&err);//argv[2] is the name of the kernel top function specified in the makefile
 		std::cout<<kernel_matmul.getInfo<CL_KERNEL_FUNCTION_NAME>()<<std::endl;
 break;
 }
@@ -124,7 +124,7 @@ fpga_start=clock();
 
 
 ////// print hardware result //////////
-	std::cout<<"printing Hardware results"<<std::endl;
+	std::cout<<"printing Hardware results.."<<std::endl;
 	int temp=0;
 	for(int i=0;i<size_in_bytes;i++){
 
@@ -155,7 +155,7 @@ cpu_start=clock();
 
 int host_result[rowa*colb];
 for(int p = 0; p<repcounts; p++){
-	//std::cout<<"Printing software results"<<std::endl;
+	std::cout<<"Printing software results"<<std::endl;
 	for(int i=0;i<rowa*colb;i++){
 		host_result[i] = 0;
 }
@@ -169,14 +169,14 @@ for(int p = 0; p<repcounts; p++){
 		
 }
 		
-		/*std::cout<<host_result[i*colb + j]<<" ";
+		std::cout<<host_result[i*colb + j]<<" ";
 		if(temph == colb-1) {
 		std::cout<<std::endl;
 		temph = 0;
 		}
 		else	{
 		temph++;
-		}*/
+		}
 }
 }
 }
