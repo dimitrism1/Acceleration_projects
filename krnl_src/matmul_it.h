@@ -1,5 +1,5 @@
 #include <iostream>
-#define ROWA 16
+#define ROWA 16			//used only for the testbench
 #define COLA 16
 #define COLB 16
 
