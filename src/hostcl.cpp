@@ -4,10 +4,10 @@
 #include "xcl2.hpp"
 
 
-#define ROWA 2
-#define COLA 3
-#define COLB 2
-#define iter 10000
+#define ROWA 58
+#define COLA 8
+#define COLB 8
+#define iter 100000
 
 
 
@@ -16,7 +16,7 @@ int main(int argc,char** argv){
 
 
 
-static const int DATA_SIZE=16;
+static const int DATA_SIZE=64;
 size_t size_in_bytes=DATA_SIZE*sizeof(int);
 size_t matrix_size=DATA_SIZE*DATA_SIZE;
 size_t matrix_size_in_bytes=matrix_size*sizeof(int);
@@ -67,8 +67,8 @@ for(unsigned int i = 0;i<devices.size();i++){
 }	
 	else{
 		std::cout<<"Programming of device "<<device.getInfo<CL_DEVICE_NAME>()<<" succesful"<<std::endl;
-		kernel_matmul = cl::Kernel(program,"matmul",&err);	//matmul is the name of the kernel top function
-		std::cout<<kernel_matmul.getInfo<CL_KERNEL_FUNCTION_NAME>()<<std::endl;
+		kernel_matmul = cl::Kernel(program,argv[2],&err);//argv[2] is the name of the kernel top function specified in the makefile
+		std::cout<<"The name of the kernel top function is "<<kernel_matmul.getInfo<CL_KERNEL_FUNCTION_NAME>()<<std::endl;
 break;
 }
 
@@ -97,8 +97,8 @@ ptr_out=(int*)q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_
 
 
 ////// Measure time for the whole fpga execution ////////
-clock_t fpga_start,fpga_clk;
-fpga_start=clock();
+
+auto fpga_begin = std::chrono::high_resolution_clock::now();
 /////// Repeat multiplication for iter iterations
 for(int o=0;o<iter;o++){
 ///////// Initialise pointers //////////
@@ -146,16 +146,17 @@ for(int o=0;o<iter;o++){
 }
 
 }*/
+
+
 }
 q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
 q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
 
-fpga_clk=clock()-fpga_start;
-float fpga_time = (float)fpga_clk/(CLOCKS_PER_SEC);
+auto fpga_end = std::chrono::high_resolution_clock::now();
 
 //////////// Calculate software result ////////////
-clock_t cpu_start,cpu_time;
-cpu_start=clock();
+
+auto cpu_begin = std::chrono::high_resolution_clock::now();
 
 int host_result[rowa*colb];
 for(int p = 0; p<iter; p++){
@@ -187,16 +188,20 @@ for(int i = 0;i < rowa;i++){
 }
 }
 std::cout<<std::endl;	
-cpu_time=clock()-cpu_start;
+auto cpu_end = std::chrono::high_resolution_clock::now();
+
 ////////// Performance output /////////////
-auto cpu_duration = (float)cpu_time/(CLOCKS_PER_SEC);
-std::cout<<"CPU duration:"<<(float)cpu_time/(CLOCKS_PER_SEC)<<" seconds"<<std::endl;
-//int total=(2*rowa*cola*colb-rowa*colb)*iter*sizeof(int);
 int total = (rowa*cola*colb) * iter * sizeof(int);
 std::cout<<"Total calculations= "<<total<<std::endl;
-std::cout << "FPGA duration:" << fpga_time << std::endl;
-std::cout << "Throughput:" << (total/fpga_time)/(1024*1024) << " MB/s" << std::endl;
-std::cout << "CPU Throughput:" << (total/(float)cpu_duration)/(1024*1024) << " MB/s" << std::endl;
+std::chrono::duration<double> cpu_duration = cpu_end - cpu_begin;
+std::cout << "CPU duration:" << cpu_duration.count() << " seconds" << std::endl;
+std::cout << "CPU Throughput:" << (total/(float)cpu_duration.count())/(1024*1024) << " MB/s" << std::endl;
+
+std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
+std::cout << "FPGA duration2:" << fpga_duration.count() << std::endl;
+std::cout << "Throughput:" << (total/fpga_duration.count())/(1024*1024) << " MB/s" << std::endl;
+
+
 //std::cout<<"Speedup is "<<(double)start_time.count()/(double)fpga_time.count()<<std::endl;
 
 
@@ -204,23 +209,21 @@ std::cout << "CPU Throughput:" << (total/(float)cpu_duration)/(1024*1024) << " M
 
 ////////////// Alternative test way to measure fpga speed ///////////////////
 
-cl::Event event;
+cl::Event event1;
   uint64_t nstimestart, nstimeend;
   double fpga_exec_time_s=0;
-  double avg_fpga_exec_time=0;
   auto duration_nanosec=0;
+
   for (int i = 0; i < iter; i++)//averaging execution time results for iter runs
   { 
-  OCL_CHECK(err, err = q.enqueueTask(kernel_matmul, NULL, &event));
-  OCL_CHECK(err, err = q.finish());
-  OCL_CHECK(err, err = event.getProfilingInfo<uint64_t>(
-                     CL_PROFILING_COMMAND_START, &nstimestart));
-  OCL_CHECK(err, err = event.getProfilingInfo<uint64_t>(
-                     CL_PROFILING_COMMAND_END, &nstimeend));
+  //OCL_CHECK(err, err = q.enqueueTask(kernel_matmul, NULL, &event));
+  q.enqueueNDRangeKernel(kernel_matmul,1,1,1,nullptr,&event1);
+  q.finish();
+  event1.getProfilingInfo<uint64_t>(CL_PROFILING_COMMAND_START, &nstimestart);
+  event1.getProfilingInfo<uint64_t>(CL_PROFILING_COMMAND_END, &nstimeend);
   duration_nanosec = nstimeend - nstimestart;
   fpga_exec_time_s += double((duration_nanosec * (1.0e-9))); // conversion to seconds
   }
-  avg_fpga_exec_time = fpga_exec_time_s/iter;
 std::cout<<"alt_Fpga exec time: "<<fpga_exec_time_s<<" seconds"<<std::endl;
 std::cout<<"alt_throughput:"<<(total/fpga_exec_time_s)/(1024*1024)<<" MB/s "<<std::endl;
 
