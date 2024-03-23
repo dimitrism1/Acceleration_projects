@@ -5,17 +5,22 @@
 int softwaretest(uint32_t[MAX_SIZE][MAX_SIZE],uint32_t[MAX_SIZE][MAX_SIZE],uint32_t[MAX_SIZE][MAX_SIZE]);
 int main(){
 
-	 uint32_t a[MAX_SIZE][MAX_SIZE]={{1,2,3},
-				          	    {4,5,6}};
-		 uint32_t b[MAX_SIZE][MAX_SIZE]={{1,4},
-						  	    {7,5},
-								{3,6}};
-		uint32_t out[MAX_SIZE][MAX_SIZE]={{0,0},
-								 {0,0}};
+	 uint32_t a[MAX_SIZE][MAX_SIZE];
+	 //{{1,2,3},				          	    {4,5,6}};
+		 uint32_t b[MAX_SIZE][MAX_SIZE];
+		 //{{1,4},				  	    {7,5},			{3,6}};
+		uint32_t out[MAX_SIZE][MAX_SIZE];
+		//{{0,0},								 {0,0}};
 
+		for(int i = 0; i<MAX_SIZE;i++){
+				for(int j = 0;j<MAX_SIZE;j++){
+					a[i][j]=1;
+					b[i][j]=1;
+				}
+			}
 
 	FILE *fp;
-matmul(*a,*b,*out,MAX_SIZE,MAX_SIZE,MAX_SIZE);
+matmul(*a,*b,*out,ROWA,COLA,MAX_SIZE);
 softwaretest(a,b,out);
 fp=fopen("mulmat.dat","w");
 
@@ -38,7 +43,7 @@ int softwaretest(uint32_t a[MAX_SIZE][MAX_SIZE],uint32_t b[MAX_SIZE][MAX_SIZE],u
 
 
 }
-			printf("%d ",sw_out[i][j]);
+			printf("%d ",hw_out[i][j]);
 			if(sw_out[i][j]!=hw_out[i][j]){
 				printf("\nMismatch\n");
 				return 1;

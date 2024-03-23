@@ -1,9 +1,9 @@
 #include <iostream>
-#define ROWA 6			//used only in the testbench
-#define COLA 4
-#define COLB 8
+#define ROWA 64			//used only in the testbench
+#define COLA 64
+#define COLB 64
 
-#define MAX_SIZE 16
+#define MAX_SIZE 256
 extern "C"{
 
 /*void matmul(uint32_t a[][COLA],uint32_t b[][COLB],uint32_t out[][COLB]);//,uint32_t rowa,uint32_t cola,uint32_t colb);

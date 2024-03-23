@@ -4,10 +4,10 @@
 #include "xcl2.hpp"
 
 
-#define ROWA 58
-#define COLA 8
-#define COLB 8
-#define iter 100000
+#define ROWA 64
+#define COLA 64
+#define COLB 64
+#define iter 1000
 
 
 
@@ -144,8 +144,8 @@ for(int o=0;o<iter;o++){
 			std::cout<<std::endl;
 			break;
 }
-
 }*/
+
 
 
 }
@@ -216,7 +216,7 @@ cl::Event event1;
 
   for (int i = 0; i < iter; i++)//averaging execution time results for iter runs
   { 
-  //OCL_CHECK(err, err = q.enqueueTask(kernel_matmul, NULL, &event));
+  //q.enqueueTask(kernel_matmul, NULL, &event1));
   q.enqueueNDRangeKernel(kernel_matmul,1,1,1,nullptr,&event1);
   q.finish();
   event1.getProfilingInfo<uint64_t>(CL_PROFILING_COMMAND_START, &nstimestart);
@@ -224,9 +224,9 @@ cl::Event event1;
   duration_nanosec = nstimeend - nstimestart;
   fpga_exec_time_s += double((duration_nanosec * (1.0e-9))); // conversion to seconds
   }
-std::cout<<"alt_Fpga exec time: "<<fpga_exec_time_s<<" seconds"<<std::endl;
-std::cout<<"alt_throughput:"<<(total/fpga_exec_time_s)/(1024*1024)<<" MB/s "<<std::endl;
-
+std::cout << "alt_Fpga exec time: " << fpga_exec_time_s <<" seconds" << std::endl;
+std::cout << "alt_throughput:" << (total/fpga_exec_time_s)/(1024*1024) << " MB/s " << std::endl;
+std::cout << "Speedup:" << cpu_duration.count()/fpga_exec_time_s << std::endl;
 
 return 0;
 
