@@ -4,10 +4,10 @@
 #include "xcl2.hpp"
 
 
-#define ROWA 64
-#define COLA 64
-#define COLB 64
-#define iter 1000
+#define ROWA 256
+#define COLA 256
+#define COLB 256
+#define iter 100
 
 
 
@@ -16,10 +16,10 @@ int main(int argc,char** argv){
 
 
 
-static const int DATA_SIZE=64;
-size_t size_in_bytes=DATA_SIZE*sizeof(int);
+static const int DATA_SIZE=256;
+size_t size_in_bytes=DATA_SIZE*sizeof(float);
 size_t matrix_size=DATA_SIZE*DATA_SIZE;
-size_t matrix_size_in_bytes=matrix_size*sizeof(int);
+size_t matrix_size_in_bytes=matrix_size*sizeof(float);
 
 cl_int err;
 unsigned nb;
@@ -49,9 +49,9 @@ cl::Buffer buffera,bufferb,bufferout;
 int rowa=ROWA;
 int cola=COLA;
 int colb=COLB;
-int* ptr_a;
-int* ptr_b;
-int* ptr_out;
+float* ptr_a;
+float* ptr_b;
+float* ptr_out;
 
 bool device_found = false;
 cl::Program::Binaries bins{{filebuf.data(), filebuf.size()}};			
@@ -91,16 +91,17 @@ kernel_matmul.setArg(narg++,colb);
 
 
 
-ptr_a=(int*)q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);	//host pointers
-ptr_b=(int*)q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
-ptr_out=(int*)q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_a = (float*) q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);	//host pointers
+ptr_b = (float*) q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_out = (float*) q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_bytes,nullptr,nullptr,&err);
 
 
 ////// Measure time for the whole fpga execution ////////
 
-auto fpga_begin = std::chrono::high_resolution_clock::now();
+
+long int calchw = 0;
 /////// Repeat multiplication for iter iterations
-for(int o=0;o<iter;o++){
+
 ///////// Initialise pointers //////////
 	for(int i=0;i<matrix_size;i++){
 		ptr_a[i]=1;
@@ -112,10 +113,14 @@ for(int o=0;o<iter;o++){
 	q.enqueueMigrateMemObjects({buffera,bufferb},0);//CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED);
 
 	cl::Event event;
+auto fpga_begin = std::chrono::high_resolution_clock::now();
+for(int o=0;o<iter;o++){
 //////// Start kernel /////////
 	q.enqueueNDRangeKernel(kernel_matmul,1,1,1,nullptr,&event);		//enqueueTask is deprecated, enqueueNDRangeKernel equivalent
 //q.enqueueTask(kernel_matmul);
 	q.finish();
+}
+auto fpga_end = std::chrono::high_resolution_clock::now();
 
 /////// send data back to host //////////
 	q.enqueueMigrateMemObjects({bufferout},CL_MIGRATE_MEM_OBJECT_HOST);
@@ -128,11 +133,12 @@ for(int o=0;o<iter;o++){
 
 
 ////// print hardware result //////////
-	/*std::cout<<"printing Hardware results"<<std::endl;
+	std::cout<<"printing Hardware results"<<std::endl;
 	int temp=0;
-	for(int i=0;i<size_in_bytes;i++){
+	for(int i=0;i<matrix_size;i++){
 
 		std::cout<<ptr_out[i]<<" ";
+		calchw++;
 		if(temp==colb-1){
 			std::cout<<std::endl;
 			temp=0;
@@ -144,27 +150,31 @@ for(int o=0;o<iter;o++){
 			std::cout<<std::endl;
 			break;
 }
-}*/
-
-
-
 }
-q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
-q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
 
-auto fpga_end = std::chrono::high_resolution_clock::now();
+
+
+//}
+//q.enqueueUnmapMemObject(buffera,ptr_a,nullptr,nullptr);
+//q.enqueueUnmapMemObject(bufferb,ptr_b,nullptr,nullptr);
+
+
+
 
 //////////// Calculate software result ////////////
 
 auto cpu_begin = std::chrono::high_resolution_clock::now();
-
+long int calcsw = 0;
 int host_result[rowa*colb];
 for(int p = 0; p<iter; p++){
+
 	//std::cout<<"Printing software results"<<std::endl;
+
 for(int i=0;i<rowa*colb;i++){
 	host_result[i] = 0;
 }
 int temph=0;
+
 for(int i = 0;i < rowa;i++){
 	for(int j = 0; j < colb;j++){
 		//host_result[i*rowa + j]=0;
@@ -177,6 +187,7 @@ for(int i = 0;i < rowa;i++){
 }
 		
 		/*std::cout<<host_result[i*colb + j]<<" ";
+		calcsw++;
 		if(temph == colb-1) {
 		std::cout<<std::endl;
 		temph = 0;
@@ -191,14 +202,14 @@ std::cout<<std::endl;
 auto cpu_end = std::chrono::high_resolution_clock::now();
 
 ////////// Performance output /////////////
-int total = (rowa*cola*colb) * iter * sizeof(int);
+long int total = (rowa*cola*colb) * iter * sizeof(int);
 std::cout<<"Total calculations= "<<total<<std::endl;
 std::chrono::duration<double> cpu_duration = cpu_end - cpu_begin;
 std::cout << "CPU duration:" << cpu_duration.count() << " seconds" << std::endl;
 std::cout << "CPU Throughput:" << (total/(float)cpu_duration.count())/(1024*1024) << " MB/s" << std::endl;
 
 std::chrono::duration<double> fpga_duration = fpga_end - fpga_begin;
-std::cout << "FPGA duration2:" << fpga_duration.count() << std::endl;
+std::cout << "FPGA duration:" << fpga_duration.count() << std::endl;
 std::cout << "Throughput:" << (total/fpga_duration.count())/(1024*1024) << " MB/s" << std::endl;
 
 
@@ -227,6 +238,12 @@ cl::Event event1;
 std::cout << "alt_Fpga exec time: " << fpga_exec_time_s <<" seconds" << std::endl;
 std::cout << "alt_throughput:" << (total/fpga_exec_time_s)/(1024*1024) << " MB/s " << std::endl;
 std::cout << "Speedup:" << cpu_duration.count()/fpga_exec_time_s << std::endl;
+std::cout << "Calc HW:" << calchw << std::endl;
+std::cout << "Calc SW:" << calcsw << std::endl;
+
+
+
+
 
 return 0;
 
