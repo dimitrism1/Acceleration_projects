@@ -7,9 +7,9 @@
 
 The project includes 3 kernels, matmul, matmul_it and matmul_cor. 
 
-The matmul kernel can multiply arrays of up to 16x16 size. The host code that goes with it is hostcl.cpp and can be selected for compilation in the Makefile. 
-The host code can execute the kernels many times and measure the throughput this way. The throughput for this kernel is quite low in comparison to the CPU 
-through put
+The matmul kernel can multiply arrays of up to 256x256 size. The host code that goes with it is hostcl.cpp and can be selected for compilation in the Makefile. 
+The host code can execute the kernels many times and measure the throughput this way. The throughput for this kernel is quite low in comparison to the other kernels. The acceleration is around 10 compared to the cpu throughput. 
+
 
 The matmul_it kernel iterates many times through the matrix multiplication in the kernel code instead of in the host code as the above kernel. This achieves a max higher throughput, but limits the flexibility of the matrix multiplications we can execute
 
