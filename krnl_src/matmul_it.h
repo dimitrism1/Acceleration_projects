@@ -1,7 +1,7 @@
 #include <iostream>
 #define ROWA 16			//used only for the testbench
 #define COLA 16
-#define COLB 16
+#define COLB 11
 
 #define MAX_SIZE 16
 extern "C"{

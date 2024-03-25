@@ -11,18 +11,17 @@ int main(){
 						  	    {7,5},
 								{3,6}};*/
 		uint32_t out[MAX_SIZE][MAX_SIZE];
-	uint32_t a[MAX_SIZE][MAX_SIZE] ;
-	uint32_t b[MAX_SIZE][MAX_SIZE] ;
+	uint32_t a[MAX_SIZE][MAX_SIZE];
+	uint32_t b[MAX_SIZE][MAX_SIZE];
 	for(int i = 0; i<MAX_SIZE;i++){
 		for(int j = 0;j<MAX_SIZE;j++){
 			a[i][j]=1;
 			b[i][j]=1;
-			out[i][j]=0;
 		}
 	}
-    const int iter = 1;
+    const int iter = 5;
 	FILE *fp;
-matmul_cor(*a,*b,*out,MAX_SIZE,MAX_SIZE,MAX_SIZE,iter);
+matmul_cor(*a,*b,*out,ROWA,COLA,MAX_SIZE,iter);
 fp=fopen("mulmat.dat","w");
 
 for(int i=0;i<ROWA;i++){
@@ -49,7 +48,7 @@ int softwaretest(uint32_t a[MAX_SIZE][MAX_SIZE],uint32_t b[MAX_SIZE][MAX_SIZE],u
 			printf("%d ",hw_out[i][j]);
 			if(sw_out[i][j]!=hw_out[i][j]){
 				printf("\nMismatch\n");
-				//return 1;
+				return 1;
 			}
 }
 			printf("\n");

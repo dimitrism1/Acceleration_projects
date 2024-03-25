@@ -26,20 +26,20 @@ int btemp[MAX_SIZE][MAX_SIZE];
 int outtemp[MAX_SIZE][MAX_SIZE]={0};//={{0,0},
 						  // {0,0}};
 int zero[MAX_SIZE][MAX_SIZE]={0};
-#pragma HLS ARRAY_PARTITION variable=atemp dim=1 type=complete
-#pragma HLS ARRAY_PARTITION variable=btemp dim=2 type=complete
-#pragma HLS ARRAY_PARTITION variable=outtemp dim=0 type=complete
+#pragma HLS ARRAY_PARTITION variable=atemp dim=2 type=complete
+#pragma HLS ARRAY_PARTITION variable=btemp dim=1 type=complete
+//#pragma HLS ARRAY_PARTITION variable=outtemp dim=0 type=complete
 
 
 
-initzero:for(int i = 0; i < MAX_SIZE;i++){
+/*initzero:for(int i = 0; i < MAX_SIZE;i++){
 
 	{
 	for(int j = 0; j < MAX_SIZE;j++)
 
 	outtemp[i][j]=0;
 }
-}
+}*/
 //std::memcpy(outtemp,zero,MAX_SIZE*MAX_SIZE);
 
 /////////// Load a to local memory //////////////
@@ -61,40 +61,34 @@ loada:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
 
 /////////// Load b to local memory //////////////
 
-loadb:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
+loadb:for(int i = 0,j = 0,z = 0;z < MAX_SIZE*MAX_SIZE; j++, z++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
-				if(j==b_col){
+				if(j == b_col){
 					i++;
-					j=0;
+					j = 0;
 				}
-				if(z<b_row*b_col){
-				btemp[i][j]=b[z];
+				if(z < b_row*b_col){
+				btemp[i][j] = b[z];
 				}
 				//btemp[i][j]=(z<b_row*b_col) ? b[z] : 0;
 }
-/*for(int i=0;i<b_row;i++){
-	for(int j=0;j<b_col;j++){
-		printf("%d\n",btemp[i][j]);
-	}
-}*/
+
 
 
 /////////// Matrix multiplication //////////////
-iter: for(uint32_t rep_c=0; rep_c < iter; rep_c++){
+iter: for(uint32_t rep_c = 0; rep_c < iter; rep_c++){
 #pragma HLS LOOP_TRIPCOUNT min=1 max=1
 
-	rowa:	for (uint32_t i=0;i<a_row;i++){
-#pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
-			//if(i<a_row){
-colb:		for(uint32_t j=0;j<b_col;j++){
-#pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
-	//if(j<b_col){
+	rowa:	for (uint32_t i = 0; i < a_row; i++){
+#pragma HLS LOOP_TRIPCOUNT min = c_size max=c_size
+colb:		for(uint32_t j = 0; j < b_col; j++){
+#pragma HLS LOOP_TRIPCOUNT min = c_size max = c_size
 
 
 cola:			for(uint32_t z=0;z<MAX_SIZE;z++){
-#pragma HLS LOOP_TRIPCOUNT min=c_size max=c_size
+#pragma HLS LOOP_TRIPCOUNT min = c_size max = c_size
 
-				outtemp[i][j]+=(z<a_col) ? (atemp[i][z]*btemp[z][j]) : 0;
+				outtemp[i][j] += (z<a_col) ? (atemp[i][z] * btemp[z][j]) : 0;
 
 
 		}
@@ -106,14 +100,14 @@ cola:			for(uint32_t z=0;z<MAX_SIZE;z++){
 
 
 ////////////Send results to global memory /////////////
-sendout:for(int i=0,j=0,z=0;z<MAX_SIZE*MAX_SIZE;j++,z++){
+sendout:for(int i = 0,j = 0,z = 0; z < MAX_SIZE*MAX_SIZE; j++, z++){
 #pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
 //#pragma HLS UNROLL
 	if(j==c_col){
 		i++;
-		j=0;
+		j = 0;
 	}
-	out[z]=(z<c_row*c_col) ? outtemp[i][j] : 0;
+	out[z]=( z < c_row*c_col) ? outtemp[i][j] : 0;
 	outtemp[i][j] = 0;
 }
 //std::memcpy(outtemp,zero,MAX_SIZE*MAX_SIZE);

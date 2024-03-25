@@ -21,7 +21,7 @@ int main(){
 	}
     const int iter = 4;
 	FILE *fp;
-matmul_it(*a,*b,*out,MAX_SIZE,MAX_SIZE,MAX_SIZE,iter);
+matmul_it(*a,*b,*out,ROWA,COLA,MAX_SIZE,iter);
 softwaretest(a,b,out);
 fp=fopen("mulmat.dat","w");
 
