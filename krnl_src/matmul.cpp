@@ -84,7 +84,6 @@ sendout:for(int i = 0, j = 0,z = 0; z < MAX_SIZE * MAX_SIZE ; j++, z++){
 		i++;
 		j = 0;
 	}
-	//out[z]=(z<c_row*c_col) ? outtemp[i][j] : 0;
 	out[z] = outtemp[i][j];
 }
 
