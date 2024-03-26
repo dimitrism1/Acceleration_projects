@@ -17,9 +17,9 @@ int main(int argc,char** argv){
 
 
 static const int DATA_SIZE=256;
-size_t size_in_bytes=DATA_SIZE*sizeof(float);
+size_t size_in_bytes=DATA_SIZE*sizeof(int);
 size_t matrix_size=DATA_SIZE*DATA_SIZE;
-size_t matrix_size_in_bytes=matrix_size*sizeof(float);
+size_t matrix_size_in_bytes=matrix_size*sizeof(int);
 
 cl_int err;
 unsigned nb;
@@ -49,9 +49,9 @@ cl::Buffer buffera,bufferb,bufferout;
 int rowa=ROWA;
 int cola=COLA;
 int colb=COLB;
-float* ptr_a;
-float* ptr_b;
-float* ptr_out;
+int* ptr_a;
+int* ptr_b;
+int* ptr_out;
 
 bool device_found = false;
 cl::Program::Binaries bins{{filebuf.data(), filebuf.size()}};			
@@ -91,9 +91,9 @@ kernel_matmul.setArg(narg++,colb);
 
 
 
-ptr_a = (float*) q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);	//host pointers
-ptr_b = (float*) q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
-ptr_out = (float*) q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_a = (int*) q.enqueueMapBuffer(buffera,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);	//host pointers
+ptr_b = (int*) q.enqueueMapBuffer(bufferb,CL_TRUE,CL_MAP_WRITE,0,matrix_size_in_bytes,nullptr,nullptr,&err);
+ptr_out = (int*) q.enqueueMapBuffer(bufferout,CL_TRUE,CL_MAP_READ,0,matrix_size_in_bytes,nullptr,nullptr,&err);
 
 
 ////// Measure time for the whole fpga execution ////////
@@ -202,7 +202,7 @@ std::cout<<std::endl;
 auto cpu_end = std::chrono::high_resolution_clock::now();
 
 ////////// Performance output /////////////
-long int total = (rowa*cola*colb) * iter * sizeof(int);
+long int total = (rowa * colb * (2 * cola - 1)) * iter * sizeof(int);
 std::cout<<"Total calculations= "<<total<<std::endl;
 std::chrono::duration<double> cpu_duration = cpu_end - cpu_begin;
 std::cout << "CPU duration:" << cpu_duration.count() << " seconds" << std::endl;
