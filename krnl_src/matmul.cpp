@@ -32,15 +32,11 @@ int outtemp[MAX_SIZE][MAX_SIZE];
 
 /////////// Load a to local memory //////////////
 loada:for(int i = 0,j = 0,z = 0;z < MAX_SIZE*MAX_SIZE; j++, z++){
-//#pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
 				if(j == a_col){
 					i++;
-					j=0;
+					j = 0;
 				}
-				//atemp[i][j]=(z<a_row*a_col) ? a[z] : 0;
-			if(z < a_row*a_col){
 				atemp[i][j] = a[z];
-				}
 
 
 }
@@ -50,15 +46,14 @@ loada:for(int i = 0,j = 0,z = 0;z < MAX_SIZE*MAX_SIZE; j++, z++){
 /////////// Load b to local memory //////////////
 
 loadb:for(int i = 0,j = 0,z = 0; z < MAX_SIZE*MAX_SIZE; j++ , z++){
-//#pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
 				if(j == b_col){
 					i++;
 					j = 0;
 				}
-				if(z < b_row*b_col){
 				btemp[i][j] = b[z];
-				}
+
 }
+
 
 
 
@@ -71,7 +66,7 @@ colb:		for(int j = 0; j < MAX_SIZE; j++){
 	int temp=0;
 cola:			for(int z = 0; z < MAX_SIZE ; z++){
 
-				temp += (z<a_col && j < b_col && i < a_row) ? (atemp[i][z] * btemp[z][j]) : 0;
+				temp += (z < a_col && j < b_col && i < a_row) ? (atemp[i][z] * btemp[z][j]) : 0;
 				outtemp[i][j] = temp;
 
 
@@ -83,7 +78,7 @@ cola:			for(int z = 0; z < MAX_SIZE ; z++){
 
 
 ////////////Send results to global memory /////////////
-sendout:for(int i = 0, j = 0,z = 0; z<MAX_SIZE * MAX_SIZE ; j++, z++){
+sendout:for(int i = 0, j = 0,z = 0; z < MAX_SIZE * MAX_SIZE ; j++, z++){
 //#pragma HLS LOOP_TRIPCOUNT min=c_size*c_size max=c_size*c_size
 	if(j == c_col){
 		i++;
