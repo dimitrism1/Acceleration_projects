@@ -13,10 +13,10 @@ KRNL_NAME=matmul
 TOP_FUNCTION_NAME=matmul
 
 HOST_SRC_ALT+=src/host.cpp common/xcl2.cpp 
-EXECUTABLE_ALT=src/largemult
-KRNL_SRC_ALT=krnl_src/large_mult.cpp 
-KRNL_NAME_ALT=mmul_256_ch
-TOP_FUNCTION_NAME_ALT=mmul
+EXECUTABLE_ALT=src/matmul_float
+KRNL_SRC_ALT=krnl_src/large_mult.cpp krnl_src/matmul.h
+KRNL_NAME_ALT=matmul_float
+TOP_FUNCTION_NAME_ALT=matmul_float
 build:
 	v++ -t $(TARGET) --platform $(PLATFORM) -c -g -k $(TOP_FUNCTION_NAME) -I ./src -o $(KRNL_NAME).$(TARGET).xo $(KRNL_SRC)
 link:
