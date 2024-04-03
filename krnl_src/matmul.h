@@ -2,7 +2,6 @@
 #define ROWA 256	//used only in the testbench
 #define COLA 256
 #define COLB 256
-
 #define MAX_SIZE 256
 extern "C"{
 

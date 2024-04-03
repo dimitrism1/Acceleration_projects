@@ -63,7 +63,7 @@ rowa:	for (int i = 0; i < MAX_SIZE ; i++){
 colb:		for(int j = 0; j < MAX_SIZE; j++){
     //// The pipeline pragma is used by default for loop limits below 64. Needs to be specified for MAX_SIZE > 64 ////////
 	#pragma HLS PIPELINE II=1
-	int temp=0;
+	int temp = 0;
 cola:			for(int z = 0; z < MAX_SIZE ; z++){
 
 				temp += (z < a_col && j < b_col && i < a_row) ? (atemp[i][z] * btemp[z][j]) : 0;

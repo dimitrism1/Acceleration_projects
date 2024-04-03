@@ -12,10 +12,10 @@ int main(){
 		uint32_t out[MAX_SIZE][MAX_SIZE];
 		//{{0,0},								 {0,0}};
 
-		for(int i = 0; i<MAX_SIZE;i++){
-				for(int j = 0;j<MAX_SIZE;j++){
-					a[i][j]=1;
-					b[i][j]=1;
+		for(int i = 0; i < MAX_SIZE;i++){
+				for(int j = 0;j < MAX_SIZE;j++){
+					a[i][j] = (i < COLA && j < ROWA) ? i : 0;
+					b[i][j] = (i < COLB && j < COLA) ? i : 0;
 				}
 			}
 
