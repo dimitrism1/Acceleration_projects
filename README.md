@@ -7,7 +7,7 @@
 
 
 The matmul kernel can multiply arrays of up to 256x256 size. The host code that goes with it is hostcl.cpp and can be selected for compilation in the Makefile. 
-The host code can execute the kernels many times and measure the throughput this way. The throughput for this kernel is quite high. The acceleration is around 90 compared to the cpu throughput. 
+The host code can execute the kernels many times and measure the throughput this way. The acceleration is around 90 compared to the cpu throughput. 
 
 
 
